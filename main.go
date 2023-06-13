@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/12A-r-p-i-t/restraunt-management/controller"
 	"github.com/12A-r-p-i-t/restraunt-management/database"
+	"github.com/12A-r-p-i-t/restraunt-management/model"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -19,6 +19,9 @@ func main() {
 
 	// Database Connection
 	database.Connect()
+	db := database.GetDB()
+	db.AutoMigrate(&model.User{})
+
 	// Starting New router
 	r := mux.NewRouter()
 
@@ -27,6 +30,6 @@ func main() {
 	r.HandleFunc("/users/{id}", controller.GetUser).Methods("GET")
 	r.HandleFunc("/users/login", controller.Login).Methods("POST")
 	r.HandleFunc("/users/signup", controller.SignUp).Methods("POST")
-	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(port, r))
+	// port := os.Getenv("PORT")
+	log.Fatal(http.ListenAndServe(":8000", r))
 }
