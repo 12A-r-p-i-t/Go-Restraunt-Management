@@ -8,6 +8,7 @@ import (
 
 	"github.com/12A-r-p-i-t/restraunt-management/helper"
 	"github.com/12A-r-p-i-t/restraunt-management/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var User *model.User
@@ -35,6 +36,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("Error in Unmarshaling data to model struct during signup")
 	}
+	password := []byte(user.Password)
+	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal("Error in hashing the password during signup")
+	}
+	user.Password = string(hashedPassword)
 	isPresent := model.CheckEmail(user.Email)
 	if isPresent {
 		json.NewEncoder(w).Encode("Email already exist")
