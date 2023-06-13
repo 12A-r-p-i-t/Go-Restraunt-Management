@@ -5,20 +5,38 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/12A-r-p-i-t/restraunt-management/helper"
 	"github.com/12A-r-p-i-t/restraunt-management/model"
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var User *model.User
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	AllUsers, err := model.FindAllUsers()
+	if err != nil {
+		log.Fatal("Error in fetching all data from User table")
+	}
+	json.NewEncoder(w).Encode(&AllUsers)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	vars := mux.Vars(r)
+	userID := vars["id"]
+	ID, err := strconv.Atoi(userID)
+	if err != nil {
+		log.Fatal("Error while converting from string to int in GetUser: ", err)
+	}
+	foundUser, err := model.FindUserByID(ID)
+	if err != nil {
+		log.Fatal("Unable to fetch User with given ID: ", err)
+	}
+	json.NewEncoder(w).Encode(foundUser)
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {

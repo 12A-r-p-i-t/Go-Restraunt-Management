@@ -63,3 +63,27 @@ func (user *User) FindUser() (*User, error) {
 	}
 	return &foundUser, nil
 }
+
+func FindUserByID(userID int) (User, error) {
+	db := getDBInstance()
+
+	var foundUser User
+	err := db.Where("id = ?", uint(userID)).First(&foundUser)
+	if gorm.IsRecordNotFoundError(err.Error) {
+		fmt.Println("No such account with given ID exists in the database")
+		return User{}, err.Error
+	}
+	return foundUser, nil
+}
+
+func FindAllUsers() ([]User, error) {
+	db := getDBInstance()
+
+	var users []User
+	err := db.Find(&users)
+	if gorm.IsRecordNotFoundError(err.Error) {
+		fmt.Println("No records exist in database")
+		return nil, err.Error
+	}
+	return users, nil
+}
