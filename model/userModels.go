@@ -51,3 +51,15 @@ func (user *User) InsertUser() *User {
 	db.Create(user)
 	return user
 }
+
+func (user *User) FindUser() (*User, error) {
+	db := getDBInstance()
+
+	var foundUser User
+	err := db.Where("email = ?", user.Email).First(&foundUser)
+	if gorm.IsRecordNotFoundError(err.Error) {
+		fmt.Println("No such account with given emailID exists in the database")
+		return nil, err.Error
+	}
+	return &foundUser, nil
+}
