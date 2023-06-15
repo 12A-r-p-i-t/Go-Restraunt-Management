@@ -26,6 +26,7 @@ func main() {
 	db.AutoMigrate(&model.Food{})
 	db.AutoMigrate(&model.Menu{})
 	db.AutoMigrate(&model.Table{})
+	db.AutoMigrate(&model.Order{})
 
 	// Starting New router
 	r := mux.NewRouter()
@@ -57,6 +58,12 @@ func main() {
 	api.HandleFunc("/tables/{tableID}", controller.GetTable).Methods("GET")
 	api.HandleFunc("/tables", controller.CreateTable).Methods("POST")
 	api.HandleFunc("/tables/{tableID}", controller.UpdateTable).Methods("PUT")
+
+	//Private Routes related to Order
+	api.HandleFunc("/orders", controller.GetOrders).Methods("GET")
+	api.HandleFunc("/orders/{orderID}", controller.GetOrder).Methods("GET")
+	api.HandleFunc("/orders", controller.CreateOrder).Methods("POST")
+	api.HandleFunc("/orders/{orderID}", controller.UpdateOrder).Methods("PUT")
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(port, r))
