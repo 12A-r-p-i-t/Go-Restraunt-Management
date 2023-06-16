@@ -97,3 +97,10 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(updatedOrder)
 }
+
+func OrderItemOrderCreator(order model.Order) uint {
+
+	insertedOrder := order.InsertOrder()
+
+	return insertedOrder.ID
+}

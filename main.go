@@ -27,6 +27,8 @@ func main() {
 	db.AutoMigrate(&model.Menu{})
 	db.AutoMigrate(&model.Table{})
 	db.AutoMigrate(&model.Order{})
+	db.AutoMigrate(&model.OrderItem{})
+	db.AutoMigrate(&model.Invoice{})
 
 	// Starting New router
 	r := mux.NewRouter()
@@ -64,6 +66,19 @@ func main() {
 	api.HandleFunc("/orders/{orderID}", controller.GetOrder).Methods("GET")
 	api.HandleFunc("/orders", controller.CreateOrder).Methods("POST")
 	api.HandleFunc("/orders/{orderID}", controller.UpdateOrder).Methods("PUT")
+
+	//Private Routes related to OrderItems
+	api.HandleFunc("/orderItems", controller.GetOrderItems).Methods("GET")
+	api.HandleFunc("/orderItems/{orderItemID}", controller.GetOrderItem).Methods("GET")
+	api.HandleFunc("/orderItems-order/{orderID}", controller.GetOrderItemsByOrder).Methods("GET")
+	api.HandleFunc("/orderItems", controller.CreateOrderItem).Methods("POST")
+	api.HandleFunc("/orderItems/{orderItemID}", controller.UpdateOrderItem).Methods("PUT")
+
+	//Private Routes related to Invoice
+	api.HandleFunc("/invoices", controller.GetInvoices).Methods("GET")
+	api.HandleFunc("/invoices/{invoiceID}", controller.GetInvoice).Methods("GET")
+	api.HandleFunc("/invoices", controller.CreateInvoice).Methods("POST")
+	api.HandleFunc("/invoices/{invoiceID}", controller.UpdateInvoice).Methods("PUT")
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(port, r))
