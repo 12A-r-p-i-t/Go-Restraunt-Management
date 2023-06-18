@@ -48,8 +48,12 @@ func GetInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var invoiceView InvoiceViewFormat
-
-	allOrderItems, err := ItemsByOrder(invoice.Order_id)
+	orderID, err := strconv.Atoi(invoice.Order_id)
+	if err != nil {
+		log.Fatal("Error in converting orderID from string to int in invoice :", err)
+		return
+	}
+	allOrderItems, err := ItemsByOrder(uint(orderID))
 	invoiceView.Order_id = invoice.Order_id
 	invoiceView.Payment_due_date = invoice.Payment_due_date
 	invoiceView.Payment_method = ""

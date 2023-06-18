@@ -56,3 +56,34 @@ func (orderItem *OrderItem) UpdateOrderItem() (OrderItem, error) {
 	}
 	return GetOrderItemByID(orderItem.ID)
 }
+
+func GetFoodItems() ([]Food, error) {
+	db := getDBInstance()
+
+	var result []Food
+	err := db.Model(&OrderItem{}).Joins("left join orderItems on orderItems.Food_id = foods.ID").Find(&result)
+	if gorm.IsRecordNotFoundError(err.Error) {
+		log.Fatal("Error in getting food Items by joining order items and food items table", err.Error)
+		return nil, err.Error
+	}
+	return result, nil
+}
+
+func GetOrderItemsByOrderID(orderID uint) ([]Food, error) {
+	db := getDBInstance()
+
+	var results []Food
+	if err := db.Table("orderItems").Joins("JOIN orders on order.id = orderItems.order_id").Joins("JOIN foods on food.id = orderItems.food_id").Find(&results).Error; err != nil {
+		log.Fatal("Error in joining the table and getting output :", err)
+		return nil, err
+	}
+	return results, nil
+
+	// var orderItems []OrderItem
+	// err := db.Where("id = ?", orderID).Find(&orderItems)
+	// if gorm.IsRecordNotFoundError(err.Error) {
+	// 	log.Fatal("Error in getting all the order Items for given order ID :", err)
+	// 	return nil, err.Error
+	// }
+	// return orderItems, nil
+}

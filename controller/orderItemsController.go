@@ -62,6 +62,11 @@ func GetOrderItemsByOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func ItemsByOrder(orderId uint) ([]model.OrderItem, error) {
+	getOrderItems, err := model.GetOrderItemsByOrderID(orderId)
+	if err != nil {
+		log.Fatal("Error in fetching order Items for given orderID :", err)
+		return nil, err
+	}
 
 }
 
