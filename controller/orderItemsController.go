@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,8 +14,8 @@ import (
 )
 
 type OrderItemPack struct {
-	Table_ID   uint
-	OrderItems []model.OrderItem
+	Table_ID   uint              `json:"table_id"`
+	OrderItems []model.OrderItem `json:"order_items"`
 }
 
 func GetOrderItems(w http.ResponseWriter, r *http.Request) {
@@ -61,12 +62,46 @@ func GetOrderItemsByOrder(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(allOrderItems)
 }
 
-func ItemsByOrder(orderId uint) ([]model.OrderItem, error) {
-	getOrderItems, err := model.GetOrderItemsByOrderID(orderId)
+func ItemsByOrder(orderId uint) (map[string]interface{}, error) {
+	getOrderItems, err := model.GetAllOrderItemsByID(orderId)
+	if err != nil {
+		log.Fatal("Error in fetching order Items for given order ID :", err)
+	}
+	getFoodItems, err := model.GetFoodItemsByOrderID(orderId)
 	if err != nil {
 		log.Fatal("Error in fetching order Items for given orderID :", err)
 		return nil, err
 	}
+	fmt.Println("Hii")
+	var payment_due float64
+	payment_due = 0
+	for _, orderItem := range getOrderItems {
+		for _, foodItem := range getFoodItems {
+			FoodID, err := strconv.Atoi(orderItem.Food_id)
+			if err != nil {
+				log.Fatal("Error in converting foodID from string to int :", err)
+				return nil, err
+			}
+			if uint(FoodID) == foodItem.ID {
+				Quantity, err := strconv.Atoi(orderItem.Quantity)
+				if err != nil {
+					log.Fatal("Error in converting Quantity to int :", err)
+				}
+				payment_due += float64(Quantity) * float64(foodItem.Price)
+			}
+		}
+	}
+	getTableItems, err := model.GetTableItemsByOrderID(orderId)
+	if err != nil {
+		log.Fatal("Error in fetching table items for given orderID :", err)
+		return nil, err
+	}
+	tableNumber := getTableItems[0].TableNumber
+	mp := make(map[string]interface{})
+	mp["payment_due"] = payment_due
+	mp["order_items"] = getOrderItems
+	mp["table_number"] = tableNumber
+	return mp, nil
 
 }
 
@@ -85,23 +120,25 @@ func CreateOrderItem(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Error in unmarshalling data to orderItemPack struct :", err)
 		return
 	}
+	fmt.Println(orderItemPack)
 	order.Order_Date, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	orderItemsToBeInserted := []interface{}{}
 	order.Table_ID = orderItemPack.Table_ID
 	order.ID = OrderItemOrderCreator(order)
-
+	fmt.Println("Oii Oii")
 	for _, orderItem := range orderItemPack.OrderItems {
 		orderItem.Order_id = order.ID
 		orderItemInserted := orderItem.InsertOrderItem()
 		orderItemsToBeInserted = append(orderItemsToBeInserted, orderItemInserted)
 	}
+	fmt.Println("Haha")
 
 	json.NewEncoder(w).Encode(orderItemsToBeInserted)
 }
 
 func UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	vars := mux.Vars()
+	vars := mux.Vars(r)
 	order_item_id := vars["orderItemID"]
 	orderItemID, err := strconv.Atoi(order_item_id)
 	if err != nil {

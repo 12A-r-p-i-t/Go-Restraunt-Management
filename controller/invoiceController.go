@@ -63,9 +63,9 @@ func GetInvoice(w http.ResponseWriter, r *http.Request) {
 
 	invoiceView.Invoice_id = invoice.ID
 	invoiceView.Payment_status = invoice.Payment_status
-	invoiceView.Payment_due = allOrderItems[0]["payment_due"]
-	invoiceView.Table_number = allOrderItems[0]["table_number"]
-	invoiceView.Order_details = allOrderItems[0]["order_items"]
+	invoiceView.Payment_due = allOrderItems["payment_due"]
+	invoiceView.Table_number = allOrderItems["table_number"]
+	invoiceView.Order_details = allOrderItems["order_items"]
 
 	json.NewEncoder(w).Encode(&invoiceView)
 }

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/jinzhu/gorm"
@@ -61,22 +62,33 @@ func GetFoodItems() ([]Food, error) {
 	db := getDBInstance()
 
 	var result []Food
-	err := db.Model(&OrderItem{}).Joins("left join orderItems on orderItems.Food_id = foods.ID").Find(&result)
+	err := db.Model(&OrderItem{}).Joins("left join order_items on order_items.food_id = foods.id").Find(&result)
 	if gorm.IsRecordNotFoundError(err.Error) {
 		log.Fatal("Error in getting food Items by joining order items and food items table", err.Error)
 		return nil, err.Error
 	}
+	fmt.Println(result)
 	return result, nil
 }
 
-func GetOrderItemsByOrderID(orderID uint) ([]Food, error) {
+func GetFoodItemsByOrderID(orderID uint) ([]Food, error) {
 	db := getDBInstance()
 
 	var results []Food
-	if err := db.Table("orderItems").Joins("JOIN orders on order.id = orderItems.order_id").Joins("JOIN foods on food.id = orderItems.food_id").Find(&results).Error; err != nil {
+	if err := db.Table("order_items").Where("order_items.order_id = ?", orderID).Joins("JOIN foods on foods.id = order_items.food_id").Find(&results).Error; err != nil {
 		log.Fatal("Error in joining the table and getting output :", err)
 		return nil, err
 	}
+
+	// if err := db.Table("orderItems").Joins("JOIN orders on orders.id = orderItems.order_id").Joins("JOIN foods on foods.id = orderItems.food_id").Find(&results).Error; err != nil {
+	// 	log.Fatal("Error in joining the table and getting output :", err)
+	// 	return nil, err
+	// }
+	fmt.Println(results[0].ID)
+	fmt.Println(results[0].Menu_id)
+	fmt.Println(results[0].Food_image)
+	fmt.Println(results[0].Price)
+	fmt.Println(results)
 	return results, nil
 
 	// var orderItems []OrderItem
@@ -86,4 +98,32 @@ func GetOrderItemsByOrderID(orderID uint) ([]Food, error) {
 	// 	return nil, err.Error
 	// }
 	// return orderItems, nil
+}
+
+func GetTableItemsByOrderID(orderID uint) ([]Table, error) {
+	db := getDBInstance()
+	fmt.Println("oii")
+	var results []Table
+	if err := db.Table("orders").Where("orders.id = ?", orderID).Joins("JOIN tables on tables.id = orders.table_id").Find(&results).Error; err != nil {
+		log.Fatal("Error in joining the table and getting output :", err)
+		return nil, err
+	}
+	// if err := db.Table("orders").Joins("JOIN orderItems on orderItems.order_id = orders.id").Joins("JOIN tables on table.id = orders.table_id").Find(&results).Error; err != nil {
+	// 	log.Fatal("Error in joining the table and getting output :", err)
+	// 	return nil, err
+	// }
+	fmt.Println(results)
+	return results, nil
+}
+
+func GetAllOrderItemsByID(orderID uint) ([]OrderItem, error) {
+	db := getDBInstance()
+
+	var orderItems []OrderItem
+	if err := db.Table("order_items").Where("order_id = ?", orderID).Find(&orderItems).Error; err != nil {
+		log.Fatal("Error in getting all orderItems from DB :", err)
+		return nil, err
+	}
+	fmt.Println(orderItems)
+	return orderItems, nil
 }
