@@ -72,7 +72,6 @@ func ItemsByOrder(orderId uint) (map[string]interface{}, error) {
 		log.Fatal("Error in fetching order Items for given orderID :", err)
 		return nil, err
 	}
-	fmt.Println("Hii")
 	var payment_due float64
 	payment_due = 0
 	for _, orderItem := range getOrderItems {
